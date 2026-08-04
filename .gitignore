@@ -1,0 +1,8 @@
+node_modules/
+*.pem
+.DS_Store
+Thumbs.db
+
+# Vídeo original 4K/AV1 — excede o limite de 100MB do GitHub e não é usado no site.
+# O site usa a versão H.264 assets/alphaville-360-web.mp4 (mantida no repo).
+assets/alphaville-360.mp4

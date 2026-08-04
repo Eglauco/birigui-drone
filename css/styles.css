@@ -1,0 +1,337 @@
+/* ============================================================
+   Birigui Drone — estilos
+   Seção hero: vídeo 360° imersivo com controle por giroscópio
+   ============================================================ */
+
+:root {
+  --bg: #05070d;
+  --ink: #eef4ff;
+  --muted: rgba(238, 244, 255, 0.66);
+  --accent: #38bdf8;
+  --accent-2: #22d3ee;
+  --glass: rgba(10, 14, 22, 0.55);
+  --hairline: rgba(255, 255, 255, 0.14);
+  --shadow: 0 18px 60px rgba(0, 0, 0, 0.5);
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Evita "puxar pra atualizar" e seleção acidental durante o arraste */
+body {
+  overscroll-behavior: none;
+  overflow: hidden;
+}
+
+/* ======================= PRELOADER ======================= */
+.preloader {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: var(--bg);
+  display: grid;
+  place-items: center;
+  transition: opacity 0.55s var(--ease), visibility 0.55s;
+}
+.preloader.is-hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+.preloader__inner {
+  display: grid;
+  justify-items: center;
+  gap: 20px;
+  padding: 24px;
+  width: 100%;
+}
+.preloader__logo {
+  width: clamp(160px, 56vw, 260px);
+  height: auto;
+  animation: preloaderPulse 2.2s ease-in-out infinite;
+}
+.preloader__bar {
+  width: clamp(170px, 60vw, 260px);
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  overflow: hidden;
+}
+.preloader__bar-fill {
+  height: 100%;
+  width: 0%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.5);
+  transition: width 0.25s ease;
+}
+.preloader__pct {
+  font-size: 13px;
+  letter-spacing: 1.5px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+@keyframes preloaderPulse {
+  0%, 100% { opacity: 0.85; }
+  50% { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .preloader__logo { animation: none; }
+}
+
+/* ======================= HERO ======================= */
+.hero {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  height: 100svh; /* respeita a barra do navegador no mobile */
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--bg);
+  isolation: isolate;
+}
+
+/* Área do vídeo 360° — ~70% da altura no mobile (deixa o vídeo menos "esticado") */
+.hero__media {
+  position: relative;
+  flex: 0 0 70%;
+  height: 70%;
+  min-height: 0;
+  overflow: hidden;
+  background: #000;
+}
+@media (min-width: 768px) {
+  .hero__media { flex-basis: 82%; height: 82%; }
+}
+
+/* Canvas WebGL onde a esfera 360° é renderizada (preenche a tela) */
+.hero__canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  background: #000;
+  touch-action: none;
+}
+
+/* Vídeo equiretangular: fonte da textura. Invisível, mas renderizado
+   (o iOS só decodifica frames se o elemento estiver "tocando" no layout). */
+.hero__video {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Camada transparente que captura o arraste (desktop) e gestos */
+.hero__interactor {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  cursor: grab;
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.hero__interactor.is-dragging { cursor: grabbing; }
+
+/* ======================= UI decorativa ======================= */
+.hero__ui {
+  position: absolute;
+  inset: 0;
+  z-index: 3; /* acima do degradê (.hero__fade z-index 2) para a dica não ficar coberta */
+  pointer-events: none; /* deixa o arraste passar para a camada de baixo */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: clamp(16px, 3.2vw, 34px);
+}
+
+.hero__topbar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+/* Degradê que funde a base do vídeo na faixa preta da marca */
+.hero__fade {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 48%;
+  z-index: 2;
+  pointer-events: none;
+  /* Transição bem gradual que vira SÓLIDO (= cor da faixa) antes da borda,
+     deixando o encontro vídeo/faixa imperceptível; várias paradas evitam "banding". */
+  background: linear-gradient(180deg,
+    rgba(5, 7, 13, 0) 0%,
+    rgba(5, 7, 13, 0.12) 28%,
+    rgba(5, 7, 13, 0.42) 52%,
+    rgba(5, 7, 13, 0.78) 72%,
+    var(--bg) 88%,
+    var(--bg) 100%);
+}
+
+/* Faixa da marca (~30% no mobile) */
+.hero__brandbar {
+  flex: 1 1 auto;
+  min-height: 0;
+  background: var(--bg);
+  display: grid;
+  place-items: center;
+  padding: clamp(12px, 3vw, 22px);
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  letter-spacing: 0.2px;
+}
+.brand__logo {
+  height: clamp(46px, 11vw, 78px);
+  width: auto;
+  max-width: 82%;
+  object-fit: contain;
+  display: block;
+}
+
+.hero__badge {
+  position: relative;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  color: #eafcff;
+  border: 1px solid var(--hairline);
+  background: var(--glass);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+
+.hero__hint {
+  /* posicionada ACIMA do degradê da base */
+  position: absolute;
+  left: 50%;
+  bottom: 14px;
+  transform: translateX(-50%);
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 10px 16px;
+  border-radius: 999px;
+  color: var(--ink);
+  background: var(--glass);
+  border: 1px solid var(--hairline);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  box-shadow: var(--shadow);
+  font-size: 14px;
+  white-space: nowrap;
+  animation: floaty 3.6s var(--ease) infinite;
+  transition: opacity 0.5s ease;
+}
+.hero__hint-icon {
+  display: inline-grid;
+  place-items: center;
+  color: var(--accent);
+  animation: swipe 1.9s ease-in-out infinite;
+}
+.hero__hint.is-hidden { opacity: 0; }
+
+/* ======================= Portão de ativação ======================= */
+.hero__gate {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  padding: 24px;
+  background: radial-gradient(90% 80% at 50% 45%, rgba(5, 7, 13, 0.35) 0%, rgba(5, 7, 13, 0.82) 100%);
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+  transition: opacity 0.6s var(--ease), visibility 0.6s;
+}
+.hero__gate.is-hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.gate__inner {
+  display: grid;
+  justify-items: center;
+  gap: 16px;
+  animation: rise 0.7s var(--ease) both;
+}
+.gate__ring {
+  color: var(--accent);
+  filter: drop-shadow(0 6px 22px rgba(56, 189, 248, 0.45));
+  animation: spin 9s linear infinite;
+}
+.gate__btn {
+  appearance: none;
+  border: 0;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+  font-size: clamp(15px, 2.4vw, 17px);
+  color: #04101a;
+  padding: 15px 26px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
+  box-shadow: 0 14px 40px rgba(34, 211, 238, 0.4);
+  transition: transform 0.18s var(--ease), box-shadow 0.18s var(--ease);
+}
+.gate__btn:hover { transform: translateY(-2px); box-shadow: 0 18px 48px rgba(34, 211, 238, 0.55); }
+.gate__btn:active { transform: translateY(0) scale(0.98); }
+.gate__sub {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13.5px;
+}
+
+/* ======================= Animações ======================= */
+@keyframes floaty {
+  0%, 100% { transform: translate(-50%, 0); }
+  50% { transform: translate(-50%, -6px); }
+}
+@keyframes swipe {
+  0%, 100% { transform: translateX(-4px); }
+  50% { transform: translateX(4px); }
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes rise {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero__hint, .hero__hint-icon, .gate__ring, .gate__inner { animation: none !important; }
+}

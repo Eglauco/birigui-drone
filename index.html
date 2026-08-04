@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no" />
+  <title>Birigui Drone — Experiência 360°</title>
+  <meta name="description" content="Birigui Drone — especialistas em gravação com drone. Mova o celular e explore em 360°." />
+  <meta name="theme-color" content="#05070d" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <!-- ================= PRELOADER ================= -->
+  <div class="preloader" id="preloader">
+    <div class="preloader__inner">
+      <img class="preloader__logo" src="assets/logo-branco.png" width="560" height="184" alt="Birigui Drone" />
+      <div class="preloader__bar"><div class="preloader__bar-fill" id="preloaderFill"></div></div>
+      <div class="preloader__pct" id="preloaderPct">0%</div>
+    </div>
+  </div>
+
+  <!-- ================= HERO 360° (WebGL) ================= -->
+  <section class="hero" id="hero" aria-label="Vídeo imersivo em 360 graus">
+    <!-- ===== Área do vídeo 360° (~70% da altura) ===== -->
+    <div class="hero__media">
+      <!-- Vídeo equiretangular usado como textura (oculto atrás do canvas) -->
+      <video id="video" class="hero__video" playsinline muted loop preload="auto" crossorigin="anonymous" aria-hidden="true"></video>
+
+      <!-- Canvas onde a esfera 360° é renderizada -->
+      <canvas id="gl" class="hero__canvas"></canvas>
+
+      <!-- Camada transparente que captura o arraste (mouse/touch) -->
+      <div class="hero__interactor" id="interactor" aria-hidden="true"></div>
+
+      <!-- UI decorativa (não captura cliques) -->
+      <div class="hero__ui">
+        <header class="hero__topbar">
+          <span class="hero__badge">360°</span>
+        </header>
+
+        <div class="hero__hint" id="hint">
+          <span class="hero__hint-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M6 9 3 12l3 3"></path>
+              <path d="M18 9l3 3-3 3"></path>
+              <path d="M3 12h18"></path>
+            </svg>
+          </span>
+          <span class="hero__hint-text">Arraste para explorar</span>
+        </div>
+      </div>
+
+      <!-- Degradê que funde o vídeo na faixa da marca -->
+      <div class="hero__fade" aria-hidden="true"></div>
+    </div>
+
+    <!-- ===== Faixa da marca (~30%) ===== -->
+    <div class="hero__brandbar">
+      <img class="brand__logo" src="assets/logo-branco.png" width="560" height="184"
+           alt="Birigui Drone — captação profissional de vídeo" />
+    </div>
+
+    <!-- Portão de entrada: 1 toque libera o sensor de movimento (obrigatório no iPhone) -->
+    <div class="hero__gate" id="gate">
+      <div class="gate__inner">
+        <div class="gate__ring" aria-hidden="true">
+          <svg viewBox="0 0 64 64" width="64" height="64" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="32" cy="32" r="20"></circle>
+            <ellipse cx="32" cy="32" rx="20" ry="8"></ellipse>
+            <path d="M12 32h40"></path>
+          </svg>
+        </div>
+        <button class="gate__btn" id="gateBtn" type="button">Toque para começar</button>
+        <p class="gate__sub">Arraste com o dedo para girar o vídeo em 360°</p>
+      </div>
+    </div>
+
+    <noscript>
+      <div class="hero__gate" style="opacity:1">
+        <div class="gate__inner">
+          <p class="gate__sub">Ative o JavaScript para ver a experiência em 360°.</p>
+        </div>
+      </div>
+    </noscript>
+  </section>
+
+  <script src="js/main.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+{
+  "name": "birigui-drone",
+  "version": "1.0.0",
+  "description": "Landing page — Birigui Drone. Especialistas em gravação com drone. (Teste: seção hero 360° com controle por giroscópio.)",
+  "scripts": {
+    "start": "node dev-server.js"
+  },
+  "license": "ISC",
+  "type": "commonjs"
+}
